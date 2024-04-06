@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./AbstractPyth.sol";
-import "./PythStructs.sol";
-import "./PythErrors.sol";
+import "@pythnetwork/pyth-sdk-solidity/AbstractPyth.sol";
+import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
+import "@pythnetwork/pyth-sdk-solidity/PythErrors.sol";
 
 contract MockPyth is AbstractPyth {
     mapping(bytes32 => PythStructs.PriceFeed) priceFeeds;
