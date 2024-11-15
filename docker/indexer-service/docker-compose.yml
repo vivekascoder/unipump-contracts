@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  channel:
+    build:
+      context: ../../
+      dockerfile: ./docker/indexer-service/Dockerfile
+    ports:
+      - "42069:42069"
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    environment:
+      - NODE_ENV=production
+      - PONDER_RPC_URL_84532=${PONDER_RPC_URL_84532}
+      - DATABASE_URL=${DATABASE_URL}

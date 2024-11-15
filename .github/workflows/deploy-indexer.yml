@@ -1,0 +1,46 @@
+name: Deploy indexer on drop.vivek.ink
+on:
+  push:
+    paths:
+      - "docker/indexer-service/*"
+      - "indexer/*"
+      - ".github/workflows/deploy-indexer.yml"
+    branches:
+      - main
+    tags:
+      - v*
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      #
+    steps:
+      - uses: actions/checkout@v4
+      - name: copy file via ssh key
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "."
+          target: "/home/statemachine/unipump"
+
+      - name: Deploy via ssh & docker-compose
+        uses: appleboy/ssh-action@master
+        env:
+          PONDER_RPC_URL_84532: ${{ secrets.PONDER_RPC_URL_84532 }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          envs: PONDER_RPC_URL_84532,DATABASE_URL
+          script: |
+            cd unipump
+            docker compose -f ./docker/indexer-service/docker-compose.yml down
+            docker compose -f ./docker/indexer-service/docker-compose.yml up --build -d
