@@ -116,9 +116,10 @@ manager.initialize(poolKey, startingPrice, hookData);
   - [x] Compute the sqrt price thingy for the current price.
   - [x] TEst teh create new pool hook
 - [x] Write test
-- [ ] generalize the unipump contract by using Map<PoolKey, DataForPool>
-- Add events and other info.
-- Deploy the contract on testnet.
+- [x] generalize the unipump contract by using Map<PoolKey, DataForPool>
+- [x] Add events and other info.
+- [x] Deploy the contract on testnet.
+- [ ] index price data for the pool.
 
 ```bash
 

@@ -1,8 +1,7 @@
 import { createConfig } from "@ponder/core";
 import { http } from "viem";
-
-import { ExampleContractAbi } from "./abis/ExampleContractAbi";
 import { UniPumpCreatorAbi } from "./abis/UniPumpCreatorAbi";
+import { UniPumpAbi } from "./abis/UniPumpAbi.s";
 
 export default createConfig({
   networks: {
@@ -16,6 +15,12 @@ export default createConfig({
       network: "base-sepolia",
       abi: UniPumpCreatorAbi,
       address: "0x4844d08A4B2dD5a2db165C02cFBc9676B51b92aF",
+      startBlock: 17954653,
+    },
+    UniPump: {
+      network: "base-sepolia",
+      abi: UniPumpAbi,
+      address: "0xa6B8734C40613235d6Ae3946CE898c514283Aa80",
       startBlock: 17954653,
     },
   },

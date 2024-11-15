@@ -24,10 +24,11 @@ import "./DynamicFeeHook.sol";
 import {LPFeeLibrary} from "v4-core/src/libraries/LPFeeLibrary.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "v4-core/test/utils/LiquidityAmounts.sol";
-
+import "@pythnetwork/entropy-sdk-solidity/IEntropy.sol";
+import "@pythnetwork/entropy-sdk-solidity/IEntropyConsumer.sol";
 import {HookMiner} from "../test/utils/HookMiner.sol";
 
-contract UniPump is BaseHook {
+contract UniPump is BaseHook, IEntropyConsumer {
     using PoolIdLibrary for PoolKey;
 
     // NOTE: ---------------------------------------------------------
@@ -59,6 +60,9 @@ contract UniPump is BaseHook {
     IPoolManager pm;
     address CREATE2_DEPLOYER;
     DynamicFeeHook feeHook;
+    IEntropy entropy;
+    address provider;
+    UD beta;
 
     struct PoolSaleState {
         address tokenAddress;
@@ -69,15 +73,36 @@ contract UniPump is BaseHook {
         bool isToken0USDC;
     }
 
+    event PriceChange(address tokenAddress, uint256 price, uint256 timestamp);
+    event Random(uint256 number);
+
     mapping(PoolId => PoolSaleState) public poolSaleStates;
 
-    constructor(IPoolManager _poolManager, address _usdc, address _create2Deployer, address _feeHook)
-        BaseHook(_poolManager)
-    {
+    constructor(
+        IPoolManager _poolManager,
+        address _usdc,
+        address _create2Deployer,
+        address _feeHook,
+        address _entropy,
+        address _provider
+    ) BaseHook(_poolManager) {
         usdc = _usdc;
         pm = _poolManager;
         CREATE2_DEPLOYER = _create2Deployer;
         feeHook = DynamicFeeHook(_feeHook);
+        entropy = IEntropy(_entropy);
+        provider = _provider;
+    }
+
+    /// required by the IEntropyConsumer interface.
+    function getEntropy() internal view override returns (address) {
+        return address(entropy);
+    }
+
+    function entropyCallback(uint64, address, bytes32 randomNumber) internal override {
+        uint256 number = (uint256(randomNumber) % 19) + 1;
+        beta = (ud(number * 1e18).div(ud(100e18))).add(ud(1e18));
+        emit Random(intoUint256(beta));
     }
 
     function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
@@ -139,6 +164,8 @@ contract UniPump is BaseHook {
             "Not enough tokens in the contract"
         );
 
+        emit PriceChange(state.tokenAddress, intoUint256(price(key)), block.timestamp);
+
         // transfer tokenOut
         IERC20(state.tokenAddress).transfer(msg.sender, intoUint256(tokenOut));
     }
@@ -164,6 +191,8 @@ contract UniPump is BaseHook {
 
         state.lastPrice = price(key);
         console.log("last price", intoUint256(usdcOut));
+
+        emit PriceChange(state.tokenAddress, intoUint256(price(key)), block.timestamp);
 
         // transfer USDC to the user
         IERC20(usdcAddress).transfer(msg.sender, intoUint256(usdcOut));

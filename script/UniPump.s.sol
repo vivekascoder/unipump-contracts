@@ -41,6 +41,8 @@ contract UniPumpScript is Script, DeployPermit2 {
     MemeToken usdc;
     MemeToken meme;
     UniPump hook;
+    address entropy = 0x41c9e39574F40Ad34c79f1C99B66A45eFB830d4c;
+    address provider = 0x6CC14824Ea2918f5De5C2f75A9Da968ad4BD6344;
 
     function setUp() public {}
 
@@ -75,14 +77,15 @@ contract UniPumpScript is Script, DeployPermit2 {
             CREATE2_DEPLOYER,
             permissions,
             type(UniPump).creationCode,
-            abi.encode(address(manager), address(usdc), CREATE2_DEPLOYER, address(feeHook))
+            abi.encode(address(manager), address(usdc), CREATE2_DEPLOYER, address(feeHook), entropy, provider)
         );
 
         // ----------------------------- //
         // Deploy the hook using CREATE2 //
         // ----------------------------- //
         vm.broadcast();
-        UniPump unipump = new UniPump{salt: salt}(manager, address(usdc), CREATE2_DEPLOYER, address(feeHook));
+        UniPump unipump =
+            new UniPump{salt: salt}(manager, address(usdc), CREATE2_DEPLOYER, address(feeHook), entropy, provider);
 
         hook = unipump;
 
