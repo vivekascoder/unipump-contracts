@@ -1,4 +1,4 @@
-name: Deploy indexer on drop.vivek.ink
+name: Deploy indexer on drop.vivek.ink.
 on:
   push:
     paths:
