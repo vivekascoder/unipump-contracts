@@ -8,15 +8,14 @@ export const UniPumpAbi = [
         internalType: "contract IPoolManager",
       },
       { name: "_usdc", type: "address", internalType: "address" },
-      {
-        name: "_create2Deployer",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "_create2Deployer", type: "address", internalType: "address" },
       { name: "_feeHook", type: "address", internalType: "address" },
+      { name: "_entropy", type: "address", internalType: "address" },
+      { name: "_provider", type: "address", internalType: "address" },
     ],
     stateMutability: "nonpayable",
   },
+  { type: "receive", stateMutability: "payable" },
   {
     type: "function",
     name: "DEFAULT_FEE",
@@ -47,6 +46,17 @@ export const UniPumpAbi = [
   },
   {
     type: "function",
+    name: "_entropyCallback",
+    inputs: [
+      { name: "sequence", type: "uint64", internalType: "uint64" },
+      { name: "provider", type: "address", internalType: "address" },
+      { name: "randomNumber", type: "bytes32", internalType: "bytes32" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
     name: "afterAddLiquidity",
     inputs: [
       { name: "", type: "address", internalType: "address" },
@@ -59,11 +69,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       {
@@ -73,11 +79,7 @@ export const UniPumpAbi = [
         components: [
           { name: "tickLower", type: "int24", internalType: "int24" },
           { name: "tickUpper", type: "int24", internalType: "int24" },
-          {
-            name: "liquidityDelta",
-            type: "int256",
-            internalType: "int256",
-          },
+          { name: "liquidityDelta", type: "int256", internalType: "int256" },
           { name: "salt", type: "bytes32", internalType: "bytes32" },
         ],
       },
@@ -105,11 +107,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       { name: "", type: "uint256", internalType: "uint256" },
@@ -133,11 +131,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       { name: "", type: "uint160", internalType: "uint160" },
@@ -160,11 +154,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       {
@@ -174,11 +164,7 @@ export const UniPumpAbi = [
         components: [
           { name: "tickLower", type: "int24", internalType: "int24" },
           { name: "tickUpper", type: "int24", internalType: "int24" },
-          {
-            name: "liquidityDelta",
-            type: "int256",
-            internalType: "int256",
-          },
+          { name: "liquidityDelta", type: "int256", internalType: "int256" },
           { name: "salt", type: "bytes32", internalType: "bytes32" },
         ],
       },
@@ -206,11 +192,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       {
@@ -219,11 +201,7 @@ export const UniPumpAbi = [
         internalType: "struct IPoolManager.SwapParams",
         components: [
           { name: "zeroForOne", type: "bool", internalType: "bool" },
-          {
-            name: "amountSpecified",
-            type: "int256",
-            internalType: "int256",
-          },
+          { name: "amountSpecified", type: "int256", internalType: "int256" },
           {
             name: "sqrtPriceLimitX96",
             type: "uint160",
@@ -261,11 +239,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       {
@@ -275,11 +249,7 @@ export const UniPumpAbi = [
         components: [
           { name: "tickLower", type: "int24", internalType: "int24" },
           { name: "tickUpper", type: "int24", internalType: "int24" },
-          {
-            name: "liquidityDelta",
-            type: "int256",
-            internalType: "int256",
-          },
+          { name: "liquidityDelta", type: "int256", internalType: "int256" },
           { name: "salt", type: "bytes32", internalType: "bytes32" },
         ],
       },
@@ -309,11 +279,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       { name: "", type: "uint256", internalType: "uint256" },
@@ -337,11 +303,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       { name: "", type: "uint160", internalType: "uint160" },
@@ -363,11 +325,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       {
@@ -377,11 +335,7 @@ export const UniPumpAbi = [
         components: [
           { name: "tickLower", type: "int24", internalType: "int24" },
           { name: "tickUpper", type: "int24", internalType: "int24" },
-          {
-            name: "liquidityDelta",
-            type: "int256",
-            internalType: "int256",
-          },
+          { name: "liquidityDelta", type: "int256", internalType: "int256" },
           { name: "salt", type: "bytes32", internalType: "bytes32" },
         ],
       },
@@ -411,11 +365,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       {
@@ -424,11 +374,7 @@ export const UniPumpAbi = [
         internalType: "struct IPoolManager.SwapParams",
         components: [
           { name: "zeroForOne", type: "bool", internalType: "bool" },
-          {
-            name: "amountSpecified",
-            type: "int256",
-            internalType: "int256",
-          },
+          { name: "amountSpecified", type: "int256", internalType: "int256" },
           {
             name: "sqrtPriceLimitX96",
             type: "uint160",
@@ -465,11 +411,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       { name: "_amount", type: "uint256", internalType: "uint256" },
@@ -490,11 +432,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
     ],
@@ -529,11 +467,7 @@ export const UniPumpAbi = [
         components: [
           { name: "beforeInitialize", type: "bool", internalType: "bool" },
           { name: "afterInitialize", type: "bool", internalType: "bool" },
-          {
-            name: "beforeAddLiquidity",
-            type: "bool",
-            internalType: "bool",
-          },
+          { name: "beforeAddLiquidity", type: "bool", internalType: "bool" },
           { name: "afterAddLiquidity", type: "bool", internalType: "bool" },
           {
             name: "beforeRemoveLiquidity",
@@ -594,6 +528,7 @@ export const UniPumpAbi = [
       { name: "supply", type: "uint256", internalType: "UD60x18" },
       { name: "locked", type: "uint256", internalType: "UD60x18" },
       { name: "isToken0USDC", type: "bool", internalType: "bool" },
+      { name: "beta", type: "uint256", internalType: "UD60x18" },
     ],
     stateMutability: "view",
   },
@@ -610,11 +545,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       { name: "_lpRouter", type: "address", internalType: "address" },
@@ -636,11 +567,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
     ],
@@ -660,11 +587,7 @@ export const UniPumpAbi = [
           { name: "currency1", type: "address", internalType: "Currency" },
           { name: "fee", type: "uint24", internalType: "uint24" },
           { name: "tickSpacing", type: "int24", internalType: "int24" },
-          {
-            name: "hooks",
-            type: "address",
-            internalType: "contract IHooks",
-          },
+          { name: "hooks", type: "address", internalType: "contract IHooks" },
         ],
       },
       { name: "_amount", type: "uint256", internalType: "uint256" },
@@ -678,6 +601,44 @@ export const UniPumpAbi = [
     inputs: [{ name: "data", type: "bytes", internalType: "bytes" }],
     outputs: [{ name: "", type: "bytes", internalType: "bytes" }],
     stateMutability: "nonpayable",
+  },
+  {
+    type: "event",
+    name: "PriceChange",
+    inputs: [
+      {
+        name: "tokenAddress",
+        type: "address",
+        indexed: false,
+        internalType: "address",
+      },
+      {
+        name: "price",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+      {
+        name: "timestamp",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "Random",
+    inputs: [
+      {
+        name: "number",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
   },
   { type: "error", name: "HookNotImplemented", inputs: [] },
   { type: "error", name: "InvalidPool", inputs: [] },

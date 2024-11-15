@@ -1,5 +1,6 @@
 import { ponder } from "@/generated";
-import { UniPumpCreatorSales } from "../ponder.schema";
+import { UniPumpCreatorSales, minBucket } from "../ponder.schema";
+import { bigint } from "@ponder/core";
 
 ponder.on("UniPumpCreator:TokenSaleCreated", async ({ event, context }) => {
   const { db } = context;
@@ -16,4 +17,28 @@ ponder.on("UniPumpCreator:TokenSaleCreated", async ({ event, context }) => {
   });
 });
 
-// ponder.on("")
+ponder.on("UniPump:PriceChange", async ({ event, context }) => {
+  const min = Math.floor(Number(event.args.timestamp) / 60) * 60;
+  const price = event.args.price;
+
+  await context.db
+    .insert(minBucket)
+    .values({
+      id: min,
+      open: price,
+      close: price,
+      low: price,
+      high: price,
+      average: price,
+      count: 1,
+      tokenAddress: event.args.tokenAddress,
+    })
+    .onConflictDoUpdate((row) => ({
+      close: price,
+      low: BigInt(Math.min(Number(row.low), Number(price))),
+      high: BigInt(Math.max(Number(row.high), Number(price))),
+      average:
+        (row.average * BigInt(row.count) + price) / (BigInt(row.count) + 1n),
+      count: row.count + 1,
+    }));
+});

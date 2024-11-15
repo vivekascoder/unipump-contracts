@@ -83,11 +83,16 @@ contract UniPumpScript is Script, DeployPermit2 {
         // ----------------------------- //
         // Deploy the hook using CREATE2 //
         // ----------------------------- //
+
         vm.broadcast();
         UniPump unipump =
             new UniPump{salt: salt}(manager, address(usdc), CREATE2_DEPLOYER, address(feeHook), entropy, provider);
 
         hook = unipump;
+
+        // top up
+        vm.broadcast();
+        payable(address(unipump)).transfer(1 ether);
 
         require(address(unipump) == hookAddress, "CounterScript: hook address mismatch");
 

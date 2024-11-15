@@ -62,7 +62,6 @@ contract UniPump is BaseHook, IEntropyConsumer {
     DynamicFeeHook feeHook;
     IEntropy entropy;
     address provider;
-    UD beta;
 
     struct PoolSaleState {
         address tokenAddress;
@@ -71,12 +70,18 @@ contract UniPump is BaseHook, IEntropyConsumer {
         UD supply;
         UD locked;
         bool isToken0USDC;
+        UD beta;
     }
+
+    UD tempBeta = ud(1);
+    PoolId tempPoolId;
 
     event PriceChange(address tokenAddress, uint256 price, uint256 timestamp);
     event Random(uint256 number);
 
     mapping(PoolId => PoolSaleState) public poolSaleStates;
+
+    receive() external payable {}
 
     constructor(
         IPoolManager _poolManager,
@@ -101,8 +106,10 @@ contract UniPump is BaseHook, IEntropyConsumer {
 
     function entropyCallback(uint64, address, bytes32 randomNumber) internal override {
         uint256 number = (uint256(randomNumber) % 19) + 1;
-        beta = (ud(number * 1e18).div(ud(100e18))).add(ud(1e18));
-        emit Random(intoUint256(beta));
+        tempBeta = (ud(number * 1e18).div(ud(100e18))).add(ud(1e18));
+        PoolSaleState storage state = poolSaleStates[tempPoolId];
+        state.beta = tempBeta;
+        emit Random(intoUint256(tempBeta));
     }
 
     function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
@@ -145,6 +152,8 @@ contract UniPump is BaseHook, IEntropyConsumer {
         // get pool state
         PoolSaleState storage state = poolSaleStates[key.toId()];
 
+        require(!state.poolIsLive, "Pool is live, plz trade on uni pool now");
+
         UD usdc_amount = ud(_amount);
         // transfer USDC from the user to the contract
         IERC20(usdcAddress).transferFrom(msg.sender, address(this), intoUint256(usdc_amount));
@@ -173,6 +182,8 @@ contract UniPump is BaseHook, IEntropyConsumer {
     function sellTokenFromSale(PoolKey memory key, uint256 _amount) external {
         // get pool state
         PoolSaleState storage state = poolSaleStates[key.toId()];
+
+        require(!state.poolIsLive, "Pool is live, plz trade on uni pool now");
 
         UD token_amount = ud(_amount);
         IERC20(state.tokenAddress).transfer(address(this), _amount);
@@ -304,6 +315,8 @@ contract UniPump is BaseHook, IEntropyConsumer {
     function beforeInitialize(address, PoolKey calldata key, uint160) external override returns (bytes4) {
         // get pool state
         PoolSaleState storage state = poolSaleStates[key.toId()];
+        state.poolIsLive = false;
+        state.beta = ud(1);
 
         // if curency0 is USDC then we know that token1 is the token.
         console.log("Currency 0", Currency.unwrap(key.currency0), "usdc", usdc);
@@ -324,6 +337,16 @@ contract UniPump is BaseHook, IEntropyConsumer {
         // mint X amount of tokens.
         meme.mint(address(this), INITIAL_MINT_AMOUNT);
         state.supply = ud(INITIAL_MINT_AMOUNT);
+
+        // // request random number
+        uint128 requestFee = entropy.getFee(provider);
+        if (address(this).balance < requestFee) revert("beforeInit: not enough fee");
+
+        tempPoolId = key.toId();
+
+        uint64 _sequenceNumber = entropy.requestWithCallback{value: requestFee}(
+            provider, bytes32(0x6bd75275b9fc0a777fb1fec48fcdb3f0aa2d90cd134519dcb699fe31e0b953e5)
+        );
 
         // make sure the hook owns the current address.
         return BaseHook.beforeInitialize.selector;

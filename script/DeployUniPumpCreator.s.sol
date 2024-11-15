@@ -35,6 +35,8 @@ contract DeployUniPumpCreator is Script {
     PoolSwapTest swapRouter = PoolSwapTest(0x96E3495b712c6589f1D2c50635FDE68CF17AC83c);
     PoolModifyLiquidityTest lpRouter = PoolModifyLiquidityTest(0xC94a4C0a89937E278a0d427bb393134E68d5ec09);
     address constant CREATE2_DEPLOYER = address(0x4e59b44847b379578588920cA78FbF26c0B4956C);
+    address entropy = 0x41c9e39574F40Ad34c79f1C99B66A45eFB830d4c;
+    address provider = 0x6CC14824Ea2918f5De5C2f75A9Da968ad4BD6344;
 
     function run() public {
         // deploy mock USDC
@@ -62,16 +64,31 @@ contract DeployUniPumpCreator is Script {
             CREATE2_DEPLOYER,
             permissions,
             type(UniPump).creationCode,
-            abi.encode(address(poolManager), address(usdc), CREATE2_DEPLOYER, address(feeHook))
+            abi.encode(address(poolManager), address(usdc), CREATE2_DEPLOYER, address(feeHook), entropy, provider)
         );
         vm.broadcast();
-        UniPump unipump = new UniPump{salt: salt}(poolManager, address(usdc), CREATE2_DEPLOYER, address(feeHook));
+        UniPump unipump =
+            new UniPump{salt: salt}(poolManager, address(usdc), CREATE2_DEPLOYER, address(feeHook), entropy, provider);
         require(address(unipump) == hookAddress, "CounterScript: hook address mismatch");
 
         // deploy the unipump creator contract
         vm.broadcast();
         UniPumpCreator creator = new UniPumpCreator(
             address(poolManager), address(usdc), CREATE2_DEPLOYER, address(unipump), address(feeHook)
+        );
+
+        // top up
+        vm.broadcast();
+        payable(address(unipump)).transfer(0.0001 ether);
+
+        // create a token sale
+        vm.broadcast();
+        creator.createTokenSale(
+            "Go Go Go Token",
+            "GOGOGO",
+            "https://twitter.com/gogogotoken",
+            "https://discord.gg/gogogotoken",
+            "Go Go Go Token is the best token in the world"
         );
 
         console.log("UniPumpCreator: ", address(creator));
