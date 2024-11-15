@@ -318,6 +318,8 @@ contract UniPump is BaseHook, IEntropyConsumer {
         state.poolIsLive = false;
         state.beta = ud(1);
 
+        emit PriceChange(state.tokenAddress, intoUint256(price(key)), block.timestamp);
+
         // if curency0 is USDC then we know that token1 is the token.
         console.log("Currency 0", Currency.unwrap(key.currency0), "usdc", usdc);
         if (Currency.unwrap(key.currency0) == usdc) {

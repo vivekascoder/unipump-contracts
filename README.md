@@ -138,6 +138,45 @@ forge script script/DeployUniPumpCreator.s.sol\
     --broadcast --via-ir -vvvvv
 ```
 
+## Info on function calls
+
+Buy token
+
+```solidity
+function buyTokenFromSale(PoolKey memory key, uint256 _amount)
+```
+
+```solidity
+function sellTokenFromSale(PoolKey memory key, uint256 _amount)
+```
+
+```solidity
+struct PoolKey {
+    /// @notice The lower currency of the pool, sorted numerically
+    Currency currency0;
+    /// @notice The higher currency of the pool, sorted numerically
+    Currency currency1;
+    /// @notice The pool LP fee, capped at 1_000_000. If the highest bit is 1, the pool has a dynamic fee and must be exactly equal to 0x800000
+    uint24 fee;
+    /// @notice Ticks that involve positions must be a multiple of tick spacing
+    int24 tickSpacing;
+    /// @notice The hooks of the pool
+    IHooks hooks;
+}
+```
+
+To create sale for a meme token call this from `UniPumpCreator`
+
+```
+function createTokenSale(
+    string memory _name,
+    string memory _symbol,
+    string memory _twitter,
+    string memory _discord,
+    string memory _bio
+) public returns (address)
+```
+
 ## Deployed Addresses
 
 ```
