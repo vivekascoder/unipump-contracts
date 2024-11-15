@@ -240,7 +240,7 @@ contract UniPumpScript is Script, DeployPermit2 {
 
         // // stdstore.target(address(hook)).sig("a(address)").checked_write(0.28e18);
         // console.log("Cap: ", intoUint256(hook.cap()));
-        // hook.postSaleAddLiquidityAndBurn(address(lpRouter), address(swapRouter));
+        hook.postSaleAddLiquidityAndBurn(poolKey, address(lpRouter), address(swapRouter));
         // // posm.mint(
         // //     poolKey,
         // //     TickMath.minUsableTick(tickSpacing),
