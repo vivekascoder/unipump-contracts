@@ -36,19 +36,23 @@ contract CreateSale is Script {
     PoolModifyLiquidityTest lpRouter = PoolModifyLiquidityTest(0xC94a4C0a89937E278a0d427bb393134E68d5ec09);
     address constant CREATE2_DEPLOYER = address(0x4e59b44847b379578588920cA78FbF26c0B4956C);
 
-    MemeToken weth = MemeToken(0x9826D9e025F1742Cfa30dfe3342CA8d9115CF872);
-    UniPump uniPump = UniPump(payable(0x368ec5615143676f245510faE0fd97eE000aaA80));
-    MemeToken meme = MemeToken(0x2eA4aFC758A629946AaE4C6a106156fd88ccE889);
+    MemeToken weth = MemeToken(0x4267D742e4fD1C03805083b087DeB575203e9b19);
+    UniPump uniPump = UniPump(payable(0xe7f06CC969f37958BCAf6AF7C9f93b251338EA80));
+    MemeToken meme = MemeToken(0x4267D742e4fD1C03805083b087DeB575203e9b19);
 
     function run() public {
         uint256 tradeSize = 1000;
 
         // buyToken(address(meme), tradeSize);
-        sellToken(address(meme), tradeSize);
+        // sellToken(address(meme), tradeSize);
 
         // vm.startBroadcast();
         // buyToken(address(meme), tradeSize);
         // vm.startBroadcast();
+        // payable(address(uniPump)).transfer(0.01 ether);
+
+        vm.broadcast();
+        weth.transfer(0x9959E4c1a6C7766987e79a7dec6070b8661e42A3, 10000e18);
     }
 
     function buyToken(address token, uint256 tradeSize) public {

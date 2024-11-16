@@ -38,7 +38,7 @@ contract CreateSale is Script {
 
     function run() public {
         // deploy the unipump creator contract
-        UniPumpCreator creator = UniPumpCreator(0x4844d08A4B2dD5a2db165C02cFBc9676B51b92aF);
+        UniPumpCreator creator = UniPumpCreator(0xADA0Ff7C8F108E311Ca7c82845A1b8ef26E90e11);
 
         vm.broadcast();
         creator.createTokenSale(
