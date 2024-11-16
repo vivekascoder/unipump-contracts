@@ -20,11 +20,11 @@ export const UniPumpCreatorSales = onchainTable("UniPumpCreatorSales", (t) => ({
 
 export const minBucket = onchainTable("minBucket", (t) => ({
   id: t.integer().primaryKey(),
-  open: t.bigint().notNull(),
-  close: t.bigint().notNull(),
-  low: t.bigint().notNull(),
-  high: t.bigint().notNull(),
-  average: t.bigint().notNull(),
+  open: t.text().notNull(),
+  close: t.text().notNull(),
+  low: t.text().notNull(),
+  high: t.text().notNull(),
+  average: t.text().notNull(),
   count: t.integer().notNull(),
   tokenAddress: t.hex().notNull(),
 }));

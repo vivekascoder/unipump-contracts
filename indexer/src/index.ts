@@ -22,15 +22,9 @@ ponder.on("UniPumpCreator:TokenSaleCreated", async ({ event, context }) => {
 
 ponder.on("UniPump:PriceChange", async ({ event, context }) => {
   const min = Math.floor(Number(event.args.timestamp) / 60) * 60;
-  const priceInUnderlying = Number(event.args.price);
-  const wethPrice = Number(event.args.oraclePrice);
-  const price = BigInt(
-    BigNumber(priceInUnderlying)
-      .dividedBy(1e18)
-      .multipliedBy(BigNumber(wethPrice).dividedBy(1e18))
-      .multipliedBy(1e18)
-      .toNumber()
-  );
+  const priceInUnderlying = BigNumber(Number(event.args.price)).dividedBy(1e18);
+  const wethPrice = BigNumber(Number(event.args.oraclePrice)).dividedBy(1e18);
+  const price = priceInUnderlying.multipliedBy(wethPrice).toString();
 
   await context.db
     .insert(minBucket)
@@ -46,10 +40,12 @@ ponder.on("UniPump:PriceChange", async ({ event, context }) => {
     })
     .onConflictDoUpdate((row) => ({
       close: price,
-      low: BigInt(Math.min(Number(row.low), Number(price))),
-      high: BigInt(Math.max(Number(row.high), Number(price))),
-      average:
-        (row.average * BigInt(row.count) + price) / (BigInt(row.count) + 1n),
+      low: Math.min(Number(row.low), Number(price)).toString(),
+      high: Math.max(Number(row.high), Number(price)).toString(),
+      average: (
+        (Number(row.average) * Number(row.count) + Number(price)) /
+        (Number(row.count) + 1)
+      ).toString(),
       count: row.count + 1,
     }));
 });

@@ -42,7 +42,7 @@ contract UniPumpScript is Script, DeployPermit2 {
     address constant CREATE2_DEPLOYER = address(0x4e59b44847b379578588920cA78FbF26c0B4956C);
     MemeToken token0;
     MemeToken token1;
-    MemeToken usdc;
+    MemeToken weth;
     MemeToken meme;
     UniPump hook;
     address entropy = 0x41c9e39574F40Ad34c79f1C99B66A45eFB830d4c;
@@ -64,18 +64,21 @@ contract UniPumpScript is Script, DeployPermit2 {
 
         vm.startBroadcast();
         (token0, token1) = deployTokens();
-        usdc = token0;
+        weth = token0;
         meme = token1;
         vm.stopBroadcast();
 
         uint160 feeHookPermissions =
             uint160(Hooks.BEFORE_SWAP_FLAG | Hooks.AFTER_SWAP_FLAG | Hooks.AFTER_INITIALIZE_FLAG);
         (address feeHookAddress, bytes32 feeeHookSalt) = HookMiner.find(
-            CREATE2_DEPLOYER, feeHookPermissions, type(DynamicFeeHook).creationCode, abi.encode(address(manager))
+            CREATE2_DEPLOYER,
+            feeHookPermissions,
+            type(DynamicFeeHook).creationCode,
+            abi.encode(address(manager), address(weth))
         );
 
         vm.broadcast();
-        DynamicFeeHook feeHook = new DynamicFeeHook{salt: feeeHookSalt}(manager);
+        DynamicFeeHook feeHook = new DynamicFeeHook{salt: feeeHookSalt}(manager, address(weth));
         require(address(feeHook) == feeHookAddress, "UniPump: fee hook address mismatch");
 
         // Mine a salt that will produce a hook address with the correct permissions
@@ -85,7 +88,7 @@ contract UniPumpScript is Script, DeployPermit2 {
             type(UniPump).creationCode,
             abi.encode(
                 address(manager),
-                address(usdc),
+                address(weth),
                 CREATE2_DEPLOYER,
                 address(feeHook),
                 entropy,
@@ -102,7 +105,7 @@ contract UniPumpScript is Script, DeployPermit2 {
         vm.broadcast();
         UniPump unipump = new UniPump{salt: salt}(
             manager,
-            address(usdc),
+            address(weth),
             CREATE2_DEPLOYER,
             address(feeHook),
             entropy,
@@ -181,7 +184,7 @@ contract UniPumpScript is Script, DeployPermit2 {
         address _feeHook
     ) internal {
         token0.mint(msg.sender, 100_000 ether);
-        usdc = token0;
+        weth = token0;
         MemeToken meme = token0;
 
         // deploy MockPyth
@@ -221,15 +224,15 @@ contract UniPumpScript is Script, DeployPermit2 {
 
         address token0;
         address token1;
-        bool isUSDCToken0;
-        if (memeTokenAddress > address(usdc)) {
-            token0 = address(usdc);
+        bool iswethToken0;
+        if (memeTokenAddress > address(weth)) {
+            token0 = address(weth);
             token1 = memeTokenAddress;
-            isUSDCToken0 = true;
+            iswethToken0 = true;
         } else {
             token0 = memeTokenAddress;
-            token1 = address(usdc);
-            isUSDCToken0 = false;
+            token1 = address(weth);
+            iswethToken0 = false;
         }
 
         PoolKey memory poolKey =

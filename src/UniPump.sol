@@ -410,8 +410,10 @@ contract UniPump is BaseHook, IEntropyConsumer {
         PoolSaleState storage state = poolSaleStates[key.toId()];
         state.poolIsLive = false;
         state.beta = ud(1);
+        state.tokenAddress = Currency.unwrap(key.currency1);
 
         uint256 wethPrice = getWethPrice();
+        console.log("Weth price", wethPrice);
         emit PriceChange(state.tokenAddress, intoUint256(price(state.tokenAddress)), block.timestamp, wethPrice);
 
         // if curency0 is weth then we know that token1 is the token.

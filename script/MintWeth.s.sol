@@ -38,16 +38,9 @@ contract CreateSale is Script {
 
     function run() public {
         // deploy the unipump creator contract
-        UniPumpCreator creator = UniPumpCreator(0x4844d08A4B2dD5a2db165C02cFBc9676B51b92aF);
+        MemeToken weth = MemeToken(0x79AE52Ca5f25199afDD381c2B835eFFC6Ead4a9a);
 
         vm.broadcast();
-        creator.createTokenSale(
-            "Go Go Go Token",
-            "GOGOGO",
-            "https://twitter.com/gogogotoken",
-            "https://discord.gg/gogogotoken",
-            "Go Go Go Token is the best token in the world",
-            "https://placekitten.com/100/100"
-        );
+        weth.mint(msg.sender, 1_000_000 ether);
     }
 }
