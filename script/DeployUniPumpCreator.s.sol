@@ -57,11 +57,14 @@ contract DeployUniPumpCreator is Script {
         uint160 feeHookPermissions =
             uint160(Hooks.BEFORE_SWAP_FLAG | Hooks.AFTER_SWAP_FLAG | Hooks.AFTER_INITIALIZE_FLAG);
         (address feeHookAddress, bytes32 feeeHookSalt) = HookMiner.find(
-            CREATE2_DEPLOYER, feeHookPermissions, type(DynamicFeeHook).creationCode, abi.encode(address(poolManager))
+            CREATE2_DEPLOYER,
+            feeHookPermissions,
+            type(DynamicFeeHook).creationCode,
+            abi.encode(address(poolManager), address(weth))
         );
 
         vm.broadcast();
-        DynamicFeeHook feeHook = new DynamicFeeHook{salt: feeeHookSalt}(poolManager);
+        DynamicFeeHook feeHook = new DynamicFeeHook{salt: feeeHookSalt}(poolManager, address(weth));
         require(address(feeHook) == feeHookAddress, "UniPump: fee hook address mismatch");
 
         // deploy the unipump hook contract

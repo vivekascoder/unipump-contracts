@@ -7,17 +7,19 @@ import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "v4-core/src/types/PoolKey.sol";
 import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "v4-core/src/types/BeforeSwapDelta.sol";
 import {BalanceDelta} from "v4-core/src/types/BalanceDelta.sol";
+import {CurrencyLibrary, Currency} from "v4-core/src/types/Currency.sol";
 
 /// @notice A time-decaying dynamically fee, updated manually with external PoolManager.updateDynamicSwapFee() calls
 contract DynamicFeeHook is BaseHook {
     uint256 public immutable startTimestamp;
-    uint128 public constant START_FEE = 100000; // represents 5%
+    uint128 public constant START_FEE = 100_000; // represents 1%
     uint128 public constant BUY_FEE = 50_000; // minimum fee of 0.05%
-
     uint128 public constant decayRate = 1; // 0.00001% per second
+    address weth;
 
-    constructor(IPoolManager _poolManager) BaseHook(_poolManager) {
+    constructor(IPoolManager _poolManager, address _weth) BaseHook(_poolManager) {
         startTimestamp = block.timestamp;
+        weth = _weth;
     }
 
     /// @dev Deteremines a Pool's swap fee
@@ -31,11 +33,23 @@ contract DynamicFeeHook is BaseHook {
         return BaseHook.afterInitialize.selector;
     }
 
-    function beforeSwap(address, PoolKey calldata key, IPoolManager.SwapParams calldata, bytes calldata)
+    function beforeSwap(address, PoolKey calldata key, IPoolManager.SwapParams calldata swapParams, bytes calldata)
         external
         override
         returns (bytes4, BeforeSwapDelta, uint24)
     {
+        if (Currency.unwrap(key.currency0) == weth && swapParams.zeroForOne) {
+            // if the pool involves WETH, set the fee to the minimum
+            setFee(key, BUY_FEE);
+            return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
+        } else if (Currency.unwrap(key.currency1) == weth && !swapParams.zeroForOne) {
+            // if the pool involves WETH, set the fee to the minimum
+            setFee(key, BUY_FEE);
+            return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
+        } else {
+            setFee(key, START_FEE);
+        }
+
         // before every swap, update the fee
         setFee(key, BUY_FEE);
         return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
