@@ -254,7 +254,7 @@ contract UniPumpScript is Script, DeployPermit2 {
         console.log("Liq: ", liq);
 
         meme.approve(address(hook), type(uint256).max);
-        hook.buyTokenFromSale(memeTokenAddress, 10e18);
+        hook.buyTokenFromSale(memeTokenAddress, 500e18);
 
         // // hook.buyTokenFromSale(100e18);
 

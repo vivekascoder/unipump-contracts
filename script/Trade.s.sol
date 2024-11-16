@@ -36,21 +36,34 @@ contract CreateSale is Script {
     PoolModifyLiquidityTest lpRouter = PoolModifyLiquidityTest(0xC94a4C0a89937E278a0d427bb393134E68d5ec09);
     address constant CREATE2_DEPLOYER = address(0x4e59b44847b379578588920cA78FbF26c0B4956C);
 
+    MemeToken weth = MemeToken(0x9826D9e025F1742Cfa30dfe3342CA8d9115CF872);
+    UniPump uniPump = UniPump(payable(0x368ec5615143676f245510faE0fd97eE000aaA80));
+    MemeToken meme = MemeToken(0x2eA4aFC758A629946AaE4C6a106156fd88ccE889);
+
     function run() public {
-        // deploy the unipump creator contract
-        MemeToken weth = MemeToken(0x79AE52Ca5f25199afDD381c2B835eFFC6Ead4a9a);
-
-        UniPump uniPump = UniPump(payable(0xB1286e8447B288fbb4C8B4b86160f1adc5672A80));
-        MemeToken meme = MemeToken(0xE194dfCBDd88373Aecc96651B43E4086bf7c1789);
-
         uint256 tradeSize = 1000;
 
+        // buyToken(address(meme), tradeSize);
+        sellToken(address(meme), tradeSize);
+
+        // vm.startBroadcast();
+        // buyToken(address(meme), tradeSize);
+        // vm.startBroadcast();
+    }
+
+    function buyToken(address token, uint256 tradeSize) public {
         vm.broadcast();
-        // weth.approve(address(uniPump), tradeSize);
+        weth.approve(address(uniPump), tradeSize);
+
+        vm.broadcast();
+        uniPump.buyTokenFromSale(token, tradeSize);
+    }
+
+    function sellToken(address token, uint256 tradeSize) public {
+        vm.broadcast();
         meme.approve(address(uniPump), tradeSize);
 
         vm.broadcast();
-        // uniPump.buyTokenFromSale(0xE194dfCBDd88373Aecc96651B43E4086bf7c1789, tradeSize);
-        uniPump.sellTokenFromSale(0xE194dfCBDd88373Aecc96651B43E4086bf7c1789, tradeSize);
+        uniPump.sellTokenFromSale(token, tradeSize);
     }
 }

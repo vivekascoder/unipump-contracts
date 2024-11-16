@@ -220,15 +220,16 @@ contract UniPump is BaseHook, IEntropyConsumer {
         IERC20(state.tokenAddress).transfer(address(this), _amount);
 
         UD current_price = price(_addr);
+        state.supply = state.supply.sub(token_amount);
         console.log("price before", intoUint256(current_price), "token amount", intoUint256(token_amount));
         console.log("locked", intoUint256(state.locked));
-        UD wethOut = current_price.div(token_amount);
+        UD wethOut = token_amount.mul(current_price);
+        console.log("wethOut", intoUint256(wethOut));
 
         require(state.locked >= wethOut, "Not enough weth in the contract");
 
         console.log("wethOut", intoUint256(wethOut));
 
-        state.supply = state.supply.sub(token_amount);
         state.locked = state.locked.sub(wethOut);
 
         state.lastPrice = price(_addr);
@@ -267,11 +268,12 @@ contract UniPump is BaseHook, IEntropyConsumer {
         // uint256 fee = pyth.getUpdateFee(priceUpdate);
         // pyth.updatePriceFeeds{value: fee}(priceUpdate);
 
-        uint256 wethPrice = getWethPrice();
+        // uint256 wethPrice = getWethPrice();
 
         // make sure the market cap is high enough
         // require(intoUint256(cap(_addr)) >= POST_SALE_LIMIT, "Market cap is too low");
-        require(intoUint256(cap(_addr).mul(ud(wethPrice))) >= 20000e18, "Market cap is too low");
+        // require(intoUint256(cap(_addr).mul(ud(wethPrice))) >= 20000e18, "Market cap is too low");
+        require(intoUint256(state.supply) >= 800_000_000e18, "800M isn't reached yet, Supply is too low");
         state.poolIsLive = true;
 
         address token0;

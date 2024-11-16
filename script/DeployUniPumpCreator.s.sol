@@ -46,7 +46,7 @@ contract DeployUniPumpCreator is Script {
         MemeToken weth = new MemeToken("Unipump WETH Coin", "WETH", 18);
 
         vm.broadcast();
-        weth.mint(address(this), 1_000_000 ether);
+        weth.mint(msg.sender, 1_000_000 ether);
 
         // deploy the fee hook.
         uint160 permissions = uint160(
@@ -108,7 +108,7 @@ contract DeployUniPumpCreator is Script {
 
         // create a token sale
         vm.broadcast();
-        creator.createTokenSale(
+        address memeTokenAddress = creator.createTokenSale(
             "Go Go Go Token",
             "GOGOGO",
             "https://twitter.com/gogogotoken",
@@ -117,9 +117,22 @@ contract DeployUniPumpCreator is Script {
             "https://placekitte.com/100/100"
         );
 
+        // buy token
+        // vm.broadcast();
+        // weth.approve(address(unipump), 0.01e18);
+        // vm.broadcast();
+        // unipump.buyTokenFromSale(address(weth), 0.01e18);
+
+        // // sell token
+        // vm.broadcast();
+        // MemeToken(memeTokenAddress).approve(address(unipump), 0.01e18);
+        // vm.broadcast();
+        // unipump.sellTokenFromSale(memeTokenAddress, 0.01e18);
+
         console.log("UniPumpCreator: ", address(creator));
         console.log("UniPump: ", address(unipump));
         console.log("FeeHook: ", address(feeHook));
         console.log("weth: ", address(weth));
+        console.log("GOGOGO Token adddress: ", memeTokenAddress);
     }
 }

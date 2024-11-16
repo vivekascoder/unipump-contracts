@@ -110,21 +110,6 @@ poolKey = PoolKey(
 manager.initialize(poolKey, startingPrice, hookData);
 ```
 
-## Things to do (13th Nov 2024 2:52 PM)
-
-- Initialize new pool with the dynamic fee hook
-  - [x] Compute the sqrt price thingy for the current price.
-  - [x] TEst teh create new pool hook
-- [x] Write test
-- [x] generalize the unipump contract by using Map<PoolKey, DataForPool>
-- [x] Add events and other info.
-- [x] Deploy the contract on testnet.
-- [x] index price data for the pool.
-- [x] pyth oracle support for threshold WETH price
-- [x] change the mock token to WETH
-- [x] in dynamic fee use reduce when side changes.
-- [x] Indexer indexes prices in USDC
-
 ```bash
 
 # solidity test script
@@ -198,10 +183,12 @@ To get the price of the token
 
 ```
 == Logs ==
-  Currency 0 0x79AE52Ca5f25199afDD381c2B835eFFC6Ead4a9a weth 0x79AE52Ca5f25199afDD381c2B835eFFC6Ead4a9a
-  MemeToken owner 0xE194dfCBDd88373Aecc96651B43E4086bf7c1789
-  UniPumpCreator:  0x446d439aF3c9f12fcAB91cCf005B6C1fF7e35cC8
-  UniPump:  0xB1286e8447B288fbb4C8B4b86160f1adc5672A80
-  FeeHook:  0x966502336228791E38C78393dcc379803BeC50C0
-  weth:  0x79AE52Ca5f25199afDD381c2B835eFFC6Ead4a9a
+  Weth price 3183141543970000000000
+  Currency 0 0x2eA4aFC758A629946AaE4C6a106156fd88ccE889 weth 0x9826D9e025F1742Cfa30dfe3342CA8d9115CF872
+  MemeToken owner 0x2eA4aFC758A629946AaE4C6a106156fd88ccE889
+  UniPumpCreator:  0xE354E322598db07b38f0FCF173bd09958984c138
+  UniPump:  0x368ec5615143676f245510faE0fd97eE000aaA80
+  FeeHook:  0x40fB84A10151dF81C36853de8d062e916A82d0c0
+  weth:  0x9826D9e025F1742Cfa30dfe3342CA8d9115CF872
+  GOGOGO Token adddress:  0x2eA4aFC758A629946AaE4C6a106156fd88ccE889
 ```

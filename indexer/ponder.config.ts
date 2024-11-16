@@ -14,14 +14,14 @@ export default createConfig({
     UniPumpCreator: {
       network: "base-sepolia",
       abi: UniPumpCreatorAbi,
-      address: "0x446d439aF3c9f12fcAB91cCf005B6C1fF7e35cC8",
-      startBlock: 17998374,
+      address: "0xE354E322598db07b38f0FCF173bd09958984c138",
+      startBlock: 18008055,
     },
     UniPump: {
       network: "base-sepolia",
       abi: UniPumpAbi,
-      address: "0xB1286e8447B288fbb4C8B4b86160f1adc5672A80",
-      startBlock: 17998374,
+      address: "0x368ec5615143676f245510faE0fd97eE000aaA80",
+      startBlock: 18008055,
     },
   },
 });
