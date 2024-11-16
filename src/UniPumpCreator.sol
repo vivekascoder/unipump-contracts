@@ -31,6 +31,8 @@ import {HookMiner} from "../test/utils/HookMiner.sol";
 contract UniPumpCreator {
     using PoolIdLibrary for PoolKey;
 
+    uint24 public constant DEFAULT_FEE = 10_000; // 1%
+
     event TokenSaleCreated(
         address token,
         bool isUSDCToken0,
@@ -109,7 +111,7 @@ contract UniPumpCreator {
 
         // initialize pool
         PoolKey memory poolKey =
-            PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(unipump));
+            PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), DEFAULT_FEE, 60, IHooks(unipump));
         poolManager.initialize(poolKey, Constants.SQRT_PRICE_1_1);
 
         emit TokenSaleCreated(address(memeToken), isUSDCToken0, _name, _symbol, _twitter, _discord, _bio, msg.sender);

@@ -210,13 +210,13 @@ contract UniPumpScript is Script, DeployPermit2 {
         // manager.initialize(poolKey, Constants.SQRT_PRICE_1_1);
 
         // current price.
-        uint256 currentPrice = intoUint256(hook.price(poolKey));
+        uint256 currentPrice = intoUint256(hook.price(memeTokenAddress));
         console.log("Current price: ", currentPrice);
 
         // // buy tokens off of sale.
 
         meme.approve(address(hook), type(uint256).max);
-        hook.buyTokenFromSale(poolKey, 1_000e18);
+        hook.buyTokenFromSale(memeTokenAddress, 1_000e18);
 
         // // hook.buyTokenFromSale(100e18);
 
@@ -240,7 +240,7 @@ contract UniPumpScript is Script, DeployPermit2 {
 
         // // stdstore.target(address(hook)).sig("a(address)").checked_write(0.28e18);
         // console.log("Cap: ", intoUint256(hook.cap()));
-        hook.postSaleAddLiquidityAndBurn(poolKey, address(lpRouter), address(swapRouter));
+        hook.postSaleAddLiquidityAndBurn(memeTokenAddress, address(lpRouter), address(swapRouter), address(posm));
         // // posm.mint(
         // //     poolKey,
         // //     TickMath.minUsableTick(tickSpacing),

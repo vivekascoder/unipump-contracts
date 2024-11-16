@@ -14,6 +14,7 @@ ponder.on("UniPumpCreator:TokenSaleCreated", async ({ event, context }) => {
     discord: event.args.discord,
     bio: event.args.bio,
     createdBy: event.args.createdBy,
+    createdAt: event.block.timestamp,
   });
 });
 

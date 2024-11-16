@@ -177,6 +177,25 @@ function createTokenSale(
 ) public returns (address)
 ```
 
+To get market cap
+
+```solidity
+    function cap(PoolKey memory key) public view returns (UD)
+```
+
+To get the price of the token
+
+```solidity
+    function price(PoolKey memory key) public view returns (UD)
+```
+
+To pass the pool key
+
+```
+  PoolKey memory poolKey =
+      PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(unipump));
+```
+
 ## Deployed Addresses
 
 ```

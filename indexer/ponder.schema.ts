@@ -14,6 +14,7 @@ export const UniPumpCreatorSales = onchainTable("UniPumpCreatorSales", (t) => ({
   discord: t.text(),
   bio: t.text(),
   createdBy: t.hex(),
+  createdAt: t.bigint().notNull(),
 }));
 
 export const minBucket = onchainTable("minBucket", (t) => ({
