@@ -46,10 +46,10 @@ contract UniPump is BaseHook, IEntropyConsumer {
     // Map<pool, Map<user, points>>
     uint24 public constant DEFAULT_FEE = 10_000; // 1%
     uint256 public constant INITIAL_MINT_AMOUNT = 1_000_000_000e18;
-    UD public M = ud(100_000e18);
+    UD public M = ud(1_000_000e18);
 
     address usdcAddress;
-    uint256 public constant POST_SALE_LIMIT = 5000e18;
+    uint256 public constant POST_SALE_LIMIT = 6.9e18;
     address usdc;
     IPoolManager pm;
     address CREATE2_DEPLOYER;
@@ -180,10 +180,12 @@ contract UniPump is BaseHook, IEntropyConsumer {
         console.log("current price", intoUint256(current_price));
         UD tokenOut = usdc_amount.div(current_price);
 
-        require(state.supply >= tokenOut, "tokenOut is greater than state.supply");
+        // MemeToken meme = MemeToken(state.tokenAddress);
+
+        // require(meme.balanceOf(address(this)) >= intoUint256(tokenOut), "tokenOut is greater than state.supply");
 
         state.locked = state.locked.add(usdc_amount);
-        state.supply = state.supply.sub(tokenOut);
+        state.supply = state.supply.add(tokenOut);
 
         state.lastPrice = price(_addr);
 
@@ -217,7 +219,7 @@ contract UniPump is BaseHook, IEntropyConsumer {
 
         console.log("usdcOut", intoUint256(usdcOut));
 
-        state.supply = state.supply.add(token_amount);
+        state.supply = state.supply.sub(token_amount);
         state.locked = state.locked.sub(usdcOut);
 
         state.lastPrice = price(_addr);
@@ -281,10 +283,9 @@ contract UniPump is BaseHook, IEntropyConsumer {
         // // add liquidity
         PoolModifyLiquidityTest router = PoolModifyLiquidityTest(_lpRouter);
 
-        uint256 halfLocked = (intoUint256(state.locked) / 2);
-        // require(halfLocked <= (type(int256).max), "SafeCastOverflow: halfLocked exceeds int256 max");
+        // 5 % goes to our address
+        uint256 liquidityToAdd = intoUint256(state.locked.mul(ud(0.95e18)));
 
-        // console.log("halfLocked", halfLocked);
         MemeToken meme = MemeToken(token1);
         MemeToken usdc = MemeToken(token0);
 
@@ -296,11 +297,31 @@ contract UniPump is BaseHook, IEntropyConsumer {
         meme.approve(address(_swapRouter), type(uint256).max);
         console.log("balance of meme", meme.balanceOf(address(this)));
 
-        uint128 liq = LiquidityAmounts.getLiquidityForAmount0(
-            TickMath.getSqrtPriceAtTick(TickMath.minUsableTick(tickSpacing)),
-            TickMath.getSqrtPriceAtTick(TickMath.maxUsableTick(tickSpacing)),
-            halfLocked
-        );
+        uint128 liq;
+
+        console.log("Liquidity to add: ", liquidityToAdd);
+        console.log("min: ", TickMath.getSqrtPriceAtTick(TickMath.minUsableTick(tickSpacing)));
+        console.log("max: ", TickMath.getSqrtPriceAtTick(TickMath.maxUsableTick(tickSpacing)));
+        int24 MIN_TICK = -887272;
+        int24 MAX_TICK = 887272;
+
+        if (state.isToken0USDC) {
+            console.log("isToken0USDC");
+            liq = LiquidityAmounts.getLiquidityForAmount0(
+                TickMath.getSqrtPriceAtTick(MIN_TICK), TickMath.getSqrtPriceAtTick(MAX_TICK), liquidityToAdd
+            );
+            liq = LiquidityAmounts.getLiquidityForAmounts(
+                uint160(currentSqrtPrice),
+                TickMath.getSqrtPriceAtTick(MIN_TICK),
+                TickMath.getSqrtPriceAtTick(MAX_TICK),
+                liquidityToAdd,
+                meme.balanceOf(address(this))
+            );
+        } else {
+            liq = LiquidityAmounts.getLiquidityForAmount1(
+                TickMath.getSqrtPriceAtTick(MIN_TICK), TickMath.getSqrtPriceAtTick(MAX_TICK), liquidityToAdd
+            );
+        }
         console.log("liq", liq);
 
         router.modifyLiquidity(
@@ -311,7 +332,9 @@ contract UniPump is BaseHook, IEntropyConsumer {
             new bytes(0)
         );
 
-        // new expermiment using modifyliquidities
+        console.log("usdc balance after adding liq: ", IERC20(usdc).balanceOf(address(this)));
+
+        // // new expermiment using modifyliquidities
         // bytes memory actions = abi.encodePacked(Actions.MINT_POSITION, Actions.SETTLE_PAIR);
         // uint256 deadline = block.timestamp + 60;
         // bytes[] memory params = new bytes[](2);
@@ -319,7 +342,7 @@ contract UniPump is BaseHook, IEntropyConsumer {
         //     poolKey,
         //     TickMath.minUsableTick(tickSpacing),
         //     TickMath.maxUsableTick(tickSpacing),
-        //     liq,
+        //     uint256(liq),
         //     uint128(halfLocked),
         //     uint128(meme.balanceOf(address(this))),
         //     address(this),
@@ -382,7 +405,7 @@ contract UniPump is BaseHook, IEntropyConsumer {
 
         // mint X amount of tokens.
         meme.mint(address(this), INITIAL_MINT_AMOUNT);
-        state.supply = ud(INITIAL_MINT_AMOUNT);
+        // state.supply = ud(INITIAL_MINT_AMOUNT);
 
         // // request random number
         uint128 requestFee = entropy.getFee(provider);

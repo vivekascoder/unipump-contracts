@@ -1,0 +1,10 @@
+- id: ton_testnet
+  wormholeChainName: ton_testnet
+  mainnet: false
+  rpcUrl: https://testnet.toncenter.com/api/v2/jsonRPC
+  type: TonChain
+- id: ton_mainnet
+  wormholeChainName: ton_mainnet
+  mainnet: true
+  rpcUrl: https://toncenter.com/api/v2/jsonRPC
+  type: TonChain

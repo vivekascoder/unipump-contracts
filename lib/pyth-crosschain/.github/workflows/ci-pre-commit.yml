@@ -1,0 +1,51 @@
+name: Pre-commit checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  POETRY_VERSION: "1.4.2"
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # Need to grab the history of the PR
+          fetch-depth: 0
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: default
+          toolchain: 1.82.0
+      - name: Install Rust versions
+        run: |
+          rustup install 1.66.1
+          rustup install 1.73.0
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+        id: setup_python
+      - name: Cache Poetry cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-cache-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ env.POETRY_VERSION }}
+      - name: Install poetry dependencies
+        run: poetry -C express_relay/sdk/python/express_relay install
+        shell: sh
+      - uses: pre-commit/action@v3.0.0
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          # Run only on files changed in the PR
+          extra_args: --from-ref ${{ github.event.pull_request.base.sha }} --to-ref ${{ github.event.pull_request.head.sha }}
+      - uses: pre-commit/action@v3.0.0
+        if: ${{ github.event_name != 'pull_request' }}

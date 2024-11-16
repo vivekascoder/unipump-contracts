@@ -1,0 +1,20 @@
+name: Check Fortuna
+
+on:
+  pull_request:
+    paths: [apps/fortuna/**]
+  push:
+    branches: [main]
+    paths: [apps/fortuna/**]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.82.0
+          override: true
+      - name: Run executor tests
+        run: cargo test --manifest-path ./apps/fortuna/Cargo.toml

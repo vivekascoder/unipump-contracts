@@ -1,0 +1,25 @@
+name: Publish Pyth JS packages
+
+on:
+  push:
+    tags:
+      - pyth-js-v*
+jobs:
+  publish-js:
+    name: Publish Javascript Packages to NPM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "package.json"
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: true
+      - name: Set publishing config
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: pnpm turbo build
+      - run: pnpm exec lerna publish from-package --no-private --no-git-tag-version --yes

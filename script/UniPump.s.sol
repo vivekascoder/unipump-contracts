@@ -27,6 +27,7 @@ import {IPositionDescriptor} from "v4-periphery/src/interfaces/IPositionDescript
 import {UD60x18 as UD, ud, exp, intoUint256} from "@prb/math/src/UD60x18.sol";
 import {MemeToken} from "../src/MemeToken.sol";
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
+import "v4-core/test/utils/LiquidityAmounts.sol";
 import "../src/DynamicFeeHook.sol";
 
 /// @notice Forge script for deploying v4 & hooks to **anvil**
@@ -215,8 +216,16 @@ contract UniPumpScript is Script, DeployPermit2 {
 
         // // buy tokens off of sale.
 
+        uint256 liq = LiquidityAmounts.getLiquidityForAmount0(
+            TickMath.getSqrtPriceAtTick(TickMath.minUsableTick(60)),
+            TickMath.getSqrtPriceAtTick(TickMath.maxUsableTick(60)),
+            10e18
+        );
+
+        console.log("Liq: ", liq);
+
         meme.approve(address(hook), type(uint256).max);
-        hook.buyTokenFromSale(memeTokenAddress, 1_000e18);
+        hook.buyTokenFromSale(memeTokenAddress, 10e18);
 
         // // hook.buyTokenFromSale(100e18);
 
