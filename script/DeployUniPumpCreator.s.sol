@@ -107,15 +107,15 @@ contract DeployUniPumpCreator is Script {
         payable(address(unipump)).transfer(0.0001 ether);
 
         // create a token sale
-        vm.broadcast();
-        address memeTokenAddress = creator.createTokenSale(
-            "Go Go Go Token",
-            "GOGOGO",
-            "https://twitter.com/gogogotoken",
-            "https://discord.gg/gogogotoken",
-            "Go Go Go Token is the best token in the world",
-            "https://placekitte.com/100/100"
-        );
+        // vm.broadcast();
+        // address memeTokenAddress = creator.createTokenSale(
+        //     "Go Go Go Token",
+        //     "GOGOGO",
+        //     "https://twitter.com/gogogotoken",
+        //     "https://discord.gg/gogogotoken",
+        //     "Go Go Go Token is the best token in the world",
+        //     "https://placekitte.com/100/100"
+        // );
 
         // buy token
         // vm.broadcast();
@@ -133,6 +133,6 @@ contract DeployUniPumpCreator is Script {
         console.log("UniPump: ", address(unipump));
         console.log("FeeHook: ", address(feeHook));
         console.log("weth: ", address(weth));
-        console.log("GOGOGO Token adddress: ", memeTokenAddress);
+        // console.log("GOGOGO Token adddress: ", memeTokenAddress);
     }
 }
