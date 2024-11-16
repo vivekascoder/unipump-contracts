@@ -122,8 +122,8 @@ manager.initialize(poolKey, startingPrice, hookData);
 - [x] index price data for the pool.
 - [x] pyth oracle support for threshold WETH price
 - [x] change the mock token to WETH
-- ~~[ ] swap() change? maybe~~
-- [ ] in dynamic fee use reduce when side changes.
+- [x] in dynamic fee use reduce when side changes.
+- [x] Indexer indexes prices in USDC
 
 ```bash
 
@@ -147,11 +147,11 @@ forge script script/DeployUniPumpCreator.s.sol\
 Buy token
 
 ```solidity
-function buyTokenFromSale(PoolKey memory key, uint256 _amount)
+    function buyTokenFromSale(address _addr, uint256 _amount) external
 ```
 
 ```solidity
-function sellTokenFromSale(PoolKey memory key, uint256 _amount)
+    function sellTokenFromSale(address _addr, uint256 _amount) external
 ```
 
 ```solidity
@@ -172,32 +172,26 @@ struct PoolKey {
 To create sale for a meme token call this from `UniPumpCreator`
 
 ```
-function createTokenSale(
-    string memory _name,
-    string memory _symbol,
-    string memory _twitter,
-    string memory _discord,
-    string memory _bio
-) public returns (address)
+    function createTokenSale(
+        string memory _name,
+        string memory _symbol,
+        string memory _twitter,
+        string memory _discord,
+        string memory _bio,
+        string memory _imageUri
+    ) public returns (address)
 ```
 
 To get market cap
 
 ```solidity
-    function cap(PoolKey memory key) public view returns (UD)
+    function cap(address _addr) public view returns (UD)
 ```
 
 To get the price of the token
 
 ```solidity
-    function price(PoolKey memory key) public view returns (UD)
-```
-
-To pass the pool key
-
-```
-  PoolKey memory poolKey =
-      PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(unipump));
+    function price(address _addr) public view returns (UD)
 ```
 
 ## Deployed Addresses
