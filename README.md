@@ -119,7 +119,11 @@ manager.initialize(poolKey, startingPrice, hookData);
 - [x] generalize the unipump contract by using Map<PoolKey, DataForPool>
 - [x] Add events and other info.
 - [x] Deploy the contract on testnet.
-- [ ] index price data for the pool.
+- [x] index price data for the pool.
+- [x] pyth oracle support for threshold WETH price
+- [x] change the mock token to WETH
+- ~~[ ] swap() change? maybe~~
+- [ ] in dynamic fee use reduce when side changes.
 
 ```bash
 

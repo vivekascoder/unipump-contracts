@@ -7,3 +7,4 @@ v4-core/=lib/v4-core/
 v4-periphery/=lib/v4-periphery/
 @prb/math/=lib/prb-math/
 @pythnetwork/entropy-sdk-solidity/=lib/pyth-crosschain/target_chains/ethereum/entropy_sdk/solidity/
+@pythnetwork/pyth-sdk-solidity/=lib/pyth-crosschain/target_chains/ethereum/sdk/solidity/

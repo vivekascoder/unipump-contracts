@@ -37,11 +37,16 @@ contract DeployUniPumpCreator is Script {
     address constant CREATE2_DEPLOYER = address(0x4e59b44847b379578588920cA78FbF26c0B4956C);
     address entropy = 0x41c9e39574F40Ad34c79f1C99B66A45eFB830d4c;
     address provider = 0x6CC14824Ea2918f5De5C2f75A9Da968ad4BD6344;
+    address priceFeedContract = 0xA2aa501b19aff244D90cc15a4Cf739D2725B5729;
+    bytes32 priceFeedWethId = 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
 
     function run() public {
-        // deploy mock USDC
+        // deploy mock weth
         vm.broadcast();
-        MemeToken usdc = new MemeToken("Unipump USDC Coin", "USDC", 18);
+        MemeToken weth = new MemeToken("Unipump WETH Coin", "WETH", 18);
+
+        vm.broadcast();
+        weth.mint(address(this), 1_000_000 ether);
 
         // deploy the fee hook.
         uint160 permissions = uint160(
@@ -64,17 +69,34 @@ contract DeployUniPumpCreator is Script {
             CREATE2_DEPLOYER,
             permissions,
             type(UniPump).creationCode,
-            abi.encode(address(poolManager), address(usdc), CREATE2_DEPLOYER, address(feeHook), entropy, provider)
+            abi.encode(
+                address(poolManager),
+                address(weth),
+                CREATE2_DEPLOYER,
+                address(feeHook),
+                entropy,
+                provider,
+                priceFeedContract,
+                priceFeedWethId
+            )
         );
         vm.broadcast();
-        UniPump unipump =
-            new UniPump{salt: salt}(poolManager, address(usdc), CREATE2_DEPLOYER, address(feeHook), entropy, provider);
+        UniPump unipump = new UniPump{salt: salt}(
+            poolManager,
+            address(weth),
+            CREATE2_DEPLOYER,
+            address(feeHook),
+            entropy,
+            provider,
+            priceFeedContract,
+            priceFeedWethId
+        );
         require(address(unipump) == hookAddress, "CounterScript: hook address mismatch");
 
         // deploy the unipump creator contract
         vm.broadcast();
         UniPumpCreator creator = new UniPumpCreator(
-            address(poolManager), address(usdc), CREATE2_DEPLOYER, address(unipump), address(feeHook)
+            address(poolManager), address(weth), CREATE2_DEPLOYER, address(unipump), address(feeHook)
         );
 
         // top up
@@ -88,12 +110,13 @@ contract DeployUniPumpCreator is Script {
             "GOGOGO",
             "https://twitter.com/gogogotoken",
             "https://discord.gg/gogogotoken",
-            "Go Go Go Token is the best token in the world"
+            "Go Go Go Token is the best token in the world",
+            "https://placekitte.com/100/100"
         );
 
         console.log("UniPumpCreator: ", address(creator));
         console.log("UniPump: ", address(unipump));
         console.log("FeeHook: ", address(feeHook));
-        console.log("USDC: ", address(usdc));
+        console.log("weth: ", address(weth));
     }
 }

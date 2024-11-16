@@ -35,7 +35,7 @@ contract UniPumpCreator {
 
     event TokenSaleCreated(
         address token,
-        bool isUSDCToken0,
+        bool iswethToken0,
         string name,
         string symbol,
         string twitter,
@@ -48,11 +48,11 @@ contract UniPumpCreator {
     IPoolManager poolManager;
     address CREATE2_DEPLOYER;
     address unipump;
-    address usdc;
+    address weth;
     address feeHook;
 
-    constructor(address _poolManager, address _usdc, address _create2Deployer, address _unipump, address _feeHook) {
-        usdc = _usdc;
+    constructor(address _poolManager, address _weth, address _create2Deployer, address _unipump, address _feeHook) {
+        weth = _weth;
         poolManager = IPoolManager(_poolManager);
         CREATE2_DEPLOYER = _create2Deployer;
         unipump = _unipump;
@@ -87,28 +87,28 @@ contract UniPumpCreator {
         //     CREATE2_DEPLOYER,
         //     permissions,
         //     type(UniPump).creationCode,
-        //     abi.encode(address(poolManager), address(usdc), CREATE2_DEPLOYER, address(feeHook))
+        //     abi.encode(address(poolManager), address(weth), CREATE2_DEPLOYER, address(feeHook))
         // );
 
-        // unipump = address(new UniPump{salt: salt}(poolManager, usdc, CREATE2_DEPLOYER, feeHookAddress));
+        // unipump = address(new UniPump{salt: salt}(poolManager, weth, CREATE2_DEPLOYER, feeHookAddress));
         // require(address(unipump) == hookAddress, "UnipumpCreator: unipump hook address mismatch");
 
         // deploy meme coin and give ownership to unipump
         MemeToken memeToken = new MemeToken(_name, _symbol, 1);
         memeToken.transferOwnership(address(unipump));
 
-        // compute token0, token1, and isUSDCToken0
+        // compute token0, token1, and iswethToken0
         address token0;
         address token1;
-        bool isUSDCToken0;
-        if (address(memeToken) > address(usdc)) {
-            token0 = address(usdc);
+        bool iswethToken0;
+        if (address(memeToken) > address(weth)) {
+            token0 = address(weth);
             token1 = address(memeToken);
-            isUSDCToken0 = true;
+            iswethToken0 = true;
         } else {
             token0 = address(memeToken);
-            token1 = address(usdc);
-            isUSDCToken0 = false;
+            token1 = address(weth);
+            iswethToken0 = false;
         }
 
         // initialize pool
@@ -117,7 +117,7 @@ contract UniPumpCreator {
         poolManager.initialize(poolKey, Constants.SQRT_PRICE_1_1);
 
         emit TokenSaleCreated(
-            address(memeToken), isUSDCToken0, _name, _symbol, _twitter, _discord, _bio, _imageUri, msg.sender
+            address(memeToken), iswethToken0, _name, _symbol, _twitter, _discord, _bio, _imageUri, msg.sender
         );
         return address(memeToken);
     }

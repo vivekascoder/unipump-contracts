@@ -29,6 +29,9 @@ import {MemeToken} from "../src/MemeToken.sol";
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
 import "v4-core/test/utils/LiquidityAmounts.sol";
 import "../src/DynamicFeeHook.sol";
+import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
+import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
+import "@pythnetwork/pyth-sdk-solidity/MockPyth.sol";
 
 /// @notice Forge script for deploying v4 & hooks to **anvil**
 /// @dev This script only works on an anvil RPC because v4 exceeds bytecode limits
@@ -44,6 +47,8 @@ contract UniPumpScript is Script, DeployPermit2 {
     UniPump hook;
     address entropy = 0x41c9e39574F40Ad34c79f1C99B66A45eFB830d4c;
     address provider = 0x6CC14824Ea2918f5De5C2f75A9Da968ad4BD6344;
+    address priceFeedContract = 0xA2aa501b19aff244D90cc15a4Cf739D2725B5729;
+    bytes32 priceFeedWethId = 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
 
     function setUp() public {}
 
@@ -78,7 +83,16 @@ contract UniPumpScript is Script, DeployPermit2 {
             CREATE2_DEPLOYER,
             permissions,
             type(UniPump).creationCode,
-            abi.encode(address(manager), address(usdc), CREATE2_DEPLOYER, address(feeHook), entropy, provider)
+            abi.encode(
+                address(manager),
+                address(usdc),
+                CREATE2_DEPLOYER,
+                address(feeHook),
+                entropy,
+                provider,
+                priceFeedContract,
+                priceFeedWethId
+            )
         );
 
         // ----------------------------- //
@@ -86,8 +100,16 @@ contract UniPumpScript is Script, DeployPermit2 {
         // ----------------------------- //
 
         vm.broadcast();
-        UniPump unipump =
-            new UniPump{salt: salt}(manager, address(usdc), CREATE2_DEPLOYER, address(feeHook), entropy, provider);
+        UniPump unipump = new UniPump{salt: salt}(
+            manager,
+            address(usdc),
+            CREATE2_DEPLOYER,
+            address(feeHook),
+            entropy,
+            provider,
+            priceFeedContract,
+            priceFeedWethId
+        );
 
         hook = unipump;
 
@@ -161,6 +183,9 @@ contract UniPumpScript is Script, DeployPermit2 {
         token0.mint(msg.sender, 100_000 ether);
         usdc = token0;
         MemeToken meme = token0;
+
+        // deploy MockPyth
+
         // token1.mint(msg.sender, 100_000 ether);
 
         // bytes memory ZERO_BYTES = new bytes(0);
@@ -191,7 +216,8 @@ contract UniPumpScript is Script, DeployPermit2 {
         UniPumpCreator creator =
             new UniPumpCreator(address(manager), address(token0), CREATE2_DEPLOYER, _hook, _feeHook);
 
-        address memeTokenAddress = creator.createTokenSale("Meme", "MEME", "twitter", "discord", "bio");
+        address memeTokenAddress =
+            creator.createTokenSale("Meme", "MEME", "twitter", "discord", "bio", "http://placekitteam.com/100/100");
 
         address token0;
         address token1;
@@ -249,7 +275,13 @@ contract UniPumpScript is Script, DeployPermit2 {
 
         // // stdstore.target(address(hook)).sig("a(address)").checked_write(0.28e18);
         // console.log("Cap: ", intoUint256(hook.cap()));
-        hook.postSaleAddLiquidityAndBurn(memeTokenAddress, address(lpRouter), address(swapRouter), address(posm));
+
+        bytes[] memory params = new bytes[](0);
+        uint256 oracleFee = IPyth(priceFeedContract).getUpdateFee(params);
+
+        hook.postSaleAddLiquidityAndBurn{value: oracleFee}(
+            memeTokenAddress, address(lpRouter), address(swapRouter), params
+        );
         // // posm.mint(
         // //     poolKey,
         // //     TickMath.minUsableTick(tickSpacing),

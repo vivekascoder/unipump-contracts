@@ -28,6 +28,8 @@ import "@pythnetwork/entropy-sdk-solidity/IEntropy.sol";
 import "@pythnetwork/entropy-sdk-solidity/IEntropyConsumer.sol";
 import {HookMiner} from "../test/utils/HookMiner.sol";
 import {Actions} from "v4-periphery/src/libraries/Actions.sol";
+import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
+import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
 
 contract UniPump is BaseHook, IEntropyConsumer {
     using PoolIdLibrary for PoolKey;
@@ -48,14 +50,16 @@ contract UniPump is BaseHook, IEntropyConsumer {
     uint256 public constant INITIAL_MINT_AMOUNT = 1_000_000_000e18;
     UD public M = ud(1_000_000e18);
 
-    address usdcAddress;
+    address wethAddress;
     uint256 public constant POST_SALE_LIMIT = 6.9e18;
-    address usdc;
+    address weth;
     IPoolManager pm;
     address CREATE2_DEPLOYER;
     DynamicFeeHook feeHook;
     IEntropy entropy;
     address provider;
+    IPyth pyth;
+    bytes32 priceFeedWethId;
 
     struct PoolSaleState {
         address tokenAddress;
@@ -63,14 +67,14 @@ contract UniPump is BaseHook, IEntropyConsumer {
         UD lastPrice;
         UD supply;
         UD locked;
-        bool isToken0USDC;
+        bool isToken0weth;
         UD beta;
     }
 
     UD tempBeta = ud(1);
     PoolId tempPoolId;
 
-    event PriceChange(address tokenAddress, uint256 price, uint256 timestamp);
+    event PriceChange(address tokenAddress, uint256 price, uint256 timestamp, uint256 oraclePrice);
     event Random(uint256 number);
 
     mapping(PoolId => PoolSaleState) public poolSaleStates;
@@ -79,18 +83,22 @@ contract UniPump is BaseHook, IEntropyConsumer {
 
     constructor(
         IPoolManager _poolManager,
-        address _usdc,
+        address _weth,
         address _create2Deployer,
         address _feeHook,
         address _entropy,
-        address _provider
+        address _provider,
+        address _pyth,
+        bytes32 _priceFeedWethId
     ) BaseHook(_poolManager) {
-        usdc = _usdc;
+        weth = _weth;
         pm = _poolManager;
         CREATE2_DEPLOYER = _create2Deployer;
         feeHook = DynamicFeeHook(_feeHook);
         entropy = IEntropy(_entropy);
         provider = _provider;
+        pyth = IPyth(_pyth);
+        priceFeedWethId = _priceFeedWethId;
     }
 
     /// required by the IEntropyConsumer interface.
@@ -129,12 +137,12 @@ contract UniPump is BaseHook, IEntropyConsumer {
         address token0;
         address token1;
 
-        if (_addr > usdc) {
-            token0 = usdc;
+        if (_addr > weth) {
+            token0 = weth;
             token1 = _addr;
         } else {
             token0 = _addr;
-            token1 = usdc;
+            token1 = weth;
         }
 
         PoolKey memory poolKey = PoolKey(
@@ -173,18 +181,18 @@ contract UniPump is BaseHook, IEntropyConsumer {
 
         require(!state.poolIsLive, "Pool is live, plz trade on uni pool now");
 
-        UD usdc_amount = ud(_amount);
-        // transfer USDC from the user to the contract
-        IERC20(usdcAddress).transferFrom(msg.sender, address(this), intoUint256(usdc_amount));
+        UD weth_amount = ud(_amount);
+        // transfer weth from the user to the contract
+        IERC20(wethAddress).transferFrom(msg.sender, address(this), intoUint256(weth_amount));
         UD current_price = price(_addr);
         console.log("current price", intoUint256(current_price));
-        UD tokenOut = usdc_amount.div(current_price);
+        UD tokenOut = weth_amount.div(current_price);
 
         // MemeToken meme = MemeToken(state.tokenAddress);
 
         // require(meme.balanceOf(address(this)) >= intoUint256(tokenOut), "tokenOut is greater than state.supply");
 
-        state.locked = state.locked.add(usdc_amount);
+        state.locked = state.locked.add(weth_amount);
         state.supply = state.supply.add(tokenOut);
 
         state.lastPrice = price(_addr);
@@ -194,7 +202,8 @@ contract UniPump is BaseHook, IEntropyConsumer {
             "Not enough tokens in the contract"
         );
 
-        emit PriceChange(state.tokenAddress, intoUint256(state.lastPrice), block.timestamp);
+        uint256 wethPrice = getWethPrice();
+        emit PriceChange(state.tokenAddress, intoUint256(state.lastPrice), block.timestamp, wethPrice);
 
         // transfer tokenOut
         IERC20(state.tokenAddress).transfer(msg.sender, intoUint256(tokenOut));
@@ -213,22 +222,23 @@ contract UniPump is BaseHook, IEntropyConsumer {
         UD current_price = price(_addr);
         console.log("price before", intoUint256(current_price), "token amount", intoUint256(token_amount));
         console.log("locked", intoUint256(state.locked));
-        UD usdcOut = current_price.div(token_amount);
+        UD wethOut = current_price.div(token_amount);
 
-        require(state.locked >= usdcOut, "Not enough USDC in the contract");
+        require(state.locked >= wethOut, "Not enough weth in the contract");
 
-        console.log("usdcOut", intoUint256(usdcOut));
+        console.log("wethOut", intoUint256(wethOut));
 
         state.supply = state.supply.sub(token_amount);
-        state.locked = state.locked.sub(usdcOut);
+        state.locked = state.locked.sub(wethOut);
 
         state.lastPrice = price(_addr);
-        console.log("last price", intoUint256(usdcOut));
+        console.log("last price", intoUint256(wethOut));
 
-        emit PriceChange(state.tokenAddress, intoUint256(price(_addr)), block.timestamp);
+        uint256 wethPrice = getWethPrice();
+        emit PriceChange(state.tokenAddress, intoUint256(price(_addr)), block.timestamp, wethPrice);
 
-        // transfer USDC to the user
-        IERC20(usdcAddress).transfer(msg.sender, intoUint256(usdcOut));
+        // transfer weth to the user
+        IERC20(wethAddress).transfer(msg.sender, intoUint256(wethOut));
     }
 
     /// @dev floor(sqrt(A / B) * 2 ** 96)
@@ -236,27 +246,43 @@ contract UniPump is BaseHook, IEntropyConsumer {
         return floor(sqrt(priceOf1Token).mul(ud(2e18).pow(ud(96e18))));
     }
 
+    function getWethPrice() public view returns (uint256) {
+        PythStructs.Price memory wethPrice = pyth.getPriceUnsafe(priceFeedWethId);
+        uint256 oraclePrice = uint256(int256(wethPrice.price)) * 10 ** 10;
+        return oraclePrice;
+    }
+
     /// @dev create new pool, add liquidity.
-    function postSaleAddLiquidityAndBurn(address _addr, address _lpRouter, address _swapRouter, address _posm)
-        external
-    {
+    function postSaleAddLiquidityAndBurn(
+        address _addr,
+        address _lpRouter,
+        address _swapRouter,
+        bytes[] calldata priceUpdate
+    ) external payable {
         PoolKey memory key = getPoolKey(_addr);
         // get pool state
         PoolSaleState storage state = poolSaleStates[key.toId()];
 
+        // Fetcht the WETH price from pyth oracle.
+        // uint256 fee = pyth.getUpdateFee(priceUpdate);
+        // pyth.updatePriceFeeds{value: fee}(priceUpdate);
+
+        uint256 wethPrice = getWethPrice();
+
         // make sure the market cap is high enough
-        require(intoUint256(cap(_addr)) >= POST_SALE_LIMIT, "Market cap is too low");
+        // require(intoUint256(cap(_addr)) >= POST_SALE_LIMIT, "Market cap is too low");
+        require(intoUint256(cap(_addr).mul(ud(wethPrice))) >= 20000e18, "Market cap is too low");
         state.poolIsLive = true;
 
         address token0;
         address token1;
-        console.log("isToken0USDC", state.isToken0USDC);
-        if (state.isToken0USDC) {
-            token0 = usdcAddress;
+        console.log("isToken0weth", state.isToken0weth);
+        if (state.isToken0weth) {
+            token0 = wethAddress;
             token1 = state.tokenAddress;
         } else {
             token0 = state.tokenAddress;
-            token1 = usdcAddress;
+            token1 = wethAddress;
         }
 
         int24 tickSpacing = 60;
@@ -268,7 +294,7 @@ contract UniPump is BaseHook, IEntropyConsumer {
             IHooks(address(feeHook))
         );
 
-        console.log("usdc", usdc);
+        console.log("weth", weth);
         console.log("meme", state.tokenAddress);
 
         UD lprice = price(_addr);
@@ -287,13 +313,13 @@ contract UniPump is BaseHook, IEntropyConsumer {
         uint256 liquidityToAdd = intoUint256(state.locked.mul(ud(0.95e18)));
 
         MemeToken meme = MemeToken(token1);
-        MemeToken usdc = MemeToken(token0);
+        MemeToken weth = MemeToken(token0);
 
-        meme.mint(address(this), 10_000_000_000e18);
+        // meme.mint(address(this), 10_000_000_000e18);
 
-        usdc.approve(address(_lpRouter), type(uint256).max);
+        weth.approve(address(_lpRouter), type(uint256).max);
         meme.approve(address(_lpRouter), type(uint256).max);
-        usdc.approve(address(_swapRouter), type(uint256).max);
+        weth.approve(address(_swapRouter), type(uint256).max);
         meme.approve(address(_swapRouter), type(uint256).max);
         console.log("balance of meme", meme.balanceOf(address(this)));
 
@@ -305,11 +331,7 @@ contract UniPump is BaseHook, IEntropyConsumer {
         int24 MIN_TICK = -887272;
         int24 MAX_TICK = 887272;
 
-        if (state.isToken0USDC) {
-            console.log("isToken0USDC");
-            liq = LiquidityAmounts.getLiquidityForAmount0(
-                TickMath.getSqrtPriceAtTick(MIN_TICK), TickMath.getSqrtPriceAtTick(MAX_TICK), liquidityToAdd
-            );
+        if (state.isToken0weth) {
             liq = LiquidityAmounts.getLiquidityForAmounts(
                 uint160(currentSqrtPrice),
                 TickMath.getSqrtPriceAtTick(MIN_TICK),
@@ -318,8 +340,12 @@ contract UniPump is BaseHook, IEntropyConsumer {
                 meme.balanceOf(address(this))
             );
         } else {
-            liq = LiquidityAmounts.getLiquidityForAmount1(
-                TickMath.getSqrtPriceAtTick(MIN_TICK), TickMath.getSqrtPriceAtTick(MAX_TICK), liquidityToAdd
+            liq = LiquidityAmounts.getLiquidityForAmounts(
+                uint160(currentSqrtPrice),
+                TickMath.getSqrtPriceAtTick(MIN_TICK),
+                TickMath.getSqrtPriceAtTick(MAX_TICK),
+                liquidityToAdd,
+                meme.balanceOf(address(this))
             );
         }
         console.log("liq", liq);
@@ -332,7 +358,7 @@ contract UniPump is BaseHook, IEntropyConsumer {
             new bytes(0)
         );
 
-        console.log("usdc balance after adding liq: ", IERC20(usdc).balanceOf(address(this)));
+        console.log("weth balance after adding liq: ", IERC20(weth).balanceOf(address(this)));
 
         // // new expermiment using modifyliquidities
         // bytes memory actions = abi.encodePacked(Actions.MINT_POSITION, Actions.SETTLE_PAIR);
@@ -385,18 +411,19 @@ contract UniPump is BaseHook, IEntropyConsumer {
         state.poolIsLive = false;
         state.beta = ud(1);
 
-        emit PriceChange(state.tokenAddress, intoUint256(price(state.tokenAddress)), block.timestamp);
+        uint256 wethPrice = getWethPrice();
+        emit PriceChange(state.tokenAddress, intoUint256(price(state.tokenAddress)), block.timestamp, wethPrice);
 
-        // if curency0 is USDC then we know that token1 is the token.
-        console.log("Currency 0", Currency.unwrap(key.currency0), "usdc", usdc);
-        if (Currency.unwrap(key.currency0) == usdc) {
-            usdcAddress = Currency.unwrap(key.currency0);
+        // if curency0 is weth then we know that token1 is the token.
+        console.log("Currency 0", Currency.unwrap(key.currency0), "weth", weth);
+        if (Currency.unwrap(key.currency0) == weth) {
+            wethAddress = Currency.unwrap(key.currency0);
             state.tokenAddress = Currency.unwrap(key.currency1);
-            state.isToken0USDC = true;
+            state.isToken0weth = true;
         } else {
-            usdcAddress = Currency.unwrap(key.currency1);
+            wethAddress = Currency.unwrap(key.currency1);
             state.tokenAddress = Currency.unwrap(key.currency0);
-            state.isToken0USDC = false;
+            state.isToken0weth = false;
         }
 
         MemeToken meme = MemeToken(state.tokenAddress);
