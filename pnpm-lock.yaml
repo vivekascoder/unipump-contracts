@@ -9,6 +9,7 @@ importers:
     specifiers:
       '@ponder/core': ^0.7.1
       '@types/node': ^20.9.0
+      bignumber.js: ^9.1.2
       eslint: ^8.53.0
       eslint-config-ponder: ^0.7.1
       hono: ^4.5.0
@@ -16,6 +17,7 @@ importers:
       viem: ^2.21.3
     dependencies:
       '@ponder/core': 0.7.1_6k2ykppksv2mpzmmjzj5gvyz2a
+      bignumber.js: 9.1.2
       hono: 4.6.10
       viem: 2.21.45_typescript@5.6.3
     devDependencies:
@@ -1049,6 +1051,10 @@ packages:
 
   /base64-js/1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
+    dev: false
+
+  /bignumber.js/9.1.2:
+    resolution: {integrity: sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==}
     dev: false
 
   /binary-extensions/2.3.0:

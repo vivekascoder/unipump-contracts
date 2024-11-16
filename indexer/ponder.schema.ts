@@ -13,6 +13,7 @@ export const UniPumpCreatorSales = onchainTable("UniPumpCreatorSales", (t) => ({
   twitter: t.text(),
   discord: t.text(),
   bio: t.text(),
+  imageUri: t.text(),
   createdBy: t.hex(),
   createdAt: t.bigint().notNull(),
 }));
