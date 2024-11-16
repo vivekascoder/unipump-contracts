@@ -41,6 +41,7 @@ contract UniPumpCreator {
         string twitter,
         string discord,
         string bio,
+        string imageUri,
         address createdBy
     );
 
@@ -63,7 +64,8 @@ contract UniPumpCreator {
         string memory _symbol,
         string memory _twitter,
         string memory _discord,
-        string memory _bio
+        string memory _bio,
+        string memory _imageUri
     ) public returns (address) {
         // deploy fee hook contract
         // uint160 feeHookPermissions =
@@ -114,7 +116,9 @@ contract UniPumpCreator {
             PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), DEFAULT_FEE, 60, IHooks(unipump));
         poolManager.initialize(poolKey, Constants.SQRT_PRICE_1_1);
 
-        emit TokenSaleCreated(address(memeToken), isUSDCToken0, _name, _symbol, _twitter, _discord, _bio, msg.sender);
+        emit TokenSaleCreated(
+            address(memeToken), isUSDCToken0, _name, _symbol, _twitter, _discord, _bio, _imageUri, msg.sender
+        );
         return address(memeToken);
     }
 }
