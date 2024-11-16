@@ -261,6 +261,9 @@ contract UniPumpScript is Script, DeployPermit2 {
         // token1.approve(address(hook), type(uint256).max);
 
         console.log("Price: ", intoUint256(hook.price(memeTokenAddress)));
+
+        IERC20(memeTokenAddress).approve(address(hook), 1e18);
+
         hook.sellTokenFromSale(memeTokenAddress, 1e18);
 
         // console.log("Price: ", intoUint256(hook.price()));

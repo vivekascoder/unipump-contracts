@@ -217,7 +217,7 @@ contract UniPump is BaseHook, IEntropyConsumer {
         require(!state.poolIsLive, "Pool is live, plz trade on uni pool now");
 
         UD token_amount = ud(_amount);
-        IERC20(state.tokenAddress).transfer(address(this), _amount);
+        IERC20(state.tokenAddress).transferFrom(msg.sender, address(this), _amount);
 
         UD current_price = price(_addr);
         state.supply = state.supply.sub(token_amount);
